@@ -78,16 +78,16 @@ impl<'a> Lexer<'a> {
 					} else { break; }
 				}
 
-				if let Some(prev) = self.prev.clone() {
+				return if let Some(prev) = self.prev.clone() {
 					match prev {
 						Token::Element(_) | Token::RightParenthesis | Token::RightBracket => {
-							return Ok(Token::Subscript(num));
+							Ok(Token::Subscript(num))
 						}
-						_ => return Ok(Token::Coefficient(num)),
+						_ => Ok(Token::Coefficient(num)),
 					}
 				} else {
-					// start of line so its a coefficient
-					return Ok(Token::Coefficient(num));
+					// start of line so it's a coefficient
+					Ok(Token::Coefficient(num))
 				}
 			},
 			'-' | '=' => {
