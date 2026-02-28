@@ -14,4 +14,6 @@ pub enum LexerError {
 	NumeralParseError(#[from] std::num::ParseIntError),
 	#[error(transparent)]
 	FloatParseError(#[from] std::num::ParseFloatError),
+	#[error("Iteration finished")]
+	IterationFinished,
 }
