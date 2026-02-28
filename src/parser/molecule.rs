@@ -1,3 +1,5 @@
+use std::fmt::Display;
+use fmtastic::Subscript;
 use crate::element::Element;
 use crate::parser::error::{ParserError, ParserResult};
 use crate::parser::token::Token;
@@ -58,5 +60,24 @@ impl Molecule {
 			coefficient,
 			elements,
 		})
+	}
+}
+
+impl Display for Molecule {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		for (_, element) in self.elements.iter().enumerate() {
+			if element.index > 1 {
+				write!(f, "{}{}", element.element, Subscript(element.index))?;
+			} else {
+				write!(f, "{}", element.element)?;
+			}
+		}
+		Ok(())
+	}
+}
+
+impl Display for ElementWithIndex {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}{}", self.element, self.index)
 	}
 }

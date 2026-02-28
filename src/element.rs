@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 
 /// Structure representing a chemical element.
@@ -54,4 +55,10 @@ pub struct Element {
     /// Element CPK hex colors
     #[serde(rename = "cpk-hex")]
     pub cpk_hex: Option<String>,
+}
+
+impl Display for Element {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.symbol)
+    }
 }

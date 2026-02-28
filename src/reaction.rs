@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use crate::parser::error::{ParserError, ParserResult};
 use crate::parser::molecule::Molecule;
 use crate::parser::token::{Lexer, Token};
@@ -52,3 +53,22 @@ impl Reaction {
 		Reaction::from_tokens(expr)
 	}
 }
+
+impl Display for Reaction {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		for (i, molecule) in self.reactants.iter().enumerate() {
+			if i > 0 { write!(f, " + ")?; }
+			write!(f, "{}", molecule)?;
+		}
+
+		write!(f, " → ")?;
+
+		for (i, molecule) in self.products.iter().enumerate() {
+			if i > 0 { write!(f, " + ")?; }
+			write!(f, "{}", molecule)?;
+		}
+
+		Ok(())
+	}
+}
+

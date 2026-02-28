@@ -63,14 +63,14 @@ fn reaction() {
     let lexer = crate::parser::token::Lexer::new(string);
     let expr = lexer.tokenize().unwrap();
     let reaction = crate::reaction::Reaction::from_tokens(expr).unwrap();
-    println!("{:?}", reaction);
+    println!("{}", reaction);
 }
 
 #[test]
 fn reaction_from_string() {
     let expr = "2H2 + O2 => 2H2O";
     let reaction = crate::reaction::Reaction::from_string(expr).unwrap();
-    println!("{:?}", reaction);
+    println!("{}", reaction);
 }
 
 #[test]
@@ -79,6 +79,5 @@ fn reaction_invalid_syntax() {
     let string = "2H2 + O/2 - 2H2O";
     let lexer = crate::parser::token::Lexer::new(string);
     let expr = lexer.tokenize().unwrap();
-    let reaction = crate::reaction::Reaction::from_tokens(expr).unwrap();
-    println!("{:?}", reaction);
+    crate::reaction::Reaction::from_tokens(expr).unwrap();
 }
