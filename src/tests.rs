@@ -1,3 +1,4 @@
+use crate::parser::Molecule;
 use crate::parser::token::Token::{Arrow, Coefficient, Element, Plus, Subscript};
 use crate::periodic_table::PeriodicTable;
 
@@ -43,4 +44,15 @@ fn tokenize_invalid_syntax() {
     let string = "H2 + O/2 --> H2O";
     let lexer = crate::parser::token::Lexer::new(string);
     lexer.tokenize().unwrap();
+}
+
+#[test]
+fn molecule() {
+    let string = "2H2O";
+    let lexer = crate::parser::token::Lexer::new(string);
+    let expr = lexer.tokenize().unwrap();
+    let molecule = Molecule::from_tokens(expr).unwrap();
+    assert_eq!(molecule.coefficient, 2);
+    assert_eq!(molecule.elements[0].index, 2);
+    assert_eq!(molecule.elements[1].index, 1);
 }

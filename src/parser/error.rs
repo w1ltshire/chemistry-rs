@@ -18,4 +18,6 @@ pub enum ParserError {
     IterationFinished,
     #[error("Non-existent element `{0}`")]
     NonExistentElement(String),
+    #[error("Unexpected subscript")]
+    UnexpectedSubscript,
 }
