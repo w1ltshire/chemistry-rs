@@ -65,11 +65,14 @@ impl Molecule {
 
 impl Display for Molecule {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		for (_, element) in self.elements.iter().enumerate() {
-			if element.index > 1 {
-				write!(f, "{}{}", element.element, Subscript(element.index))?;
-			} else {
-				write!(f, "{}", element.element)?;
+		if self.coefficient != 1 {
+			write!(f, "{}", self.coefficient)?;
+		}
+
+		for elem in &self.elements {
+			write!(f, "{}", elem.element)?;
+			if elem.index > 1 {
+				write!(f, "{}", Subscript(elem.index))?;
 			}
 		}
 		Ok(())
@@ -78,6 +81,6 @@ impl Display for Molecule {
 
 impl Display for ElementWithIndex {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}{}", self.element, self.index)
+		write!(f, "{}", self.element)
 	}
 }
