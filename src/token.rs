@@ -13,7 +13,7 @@ pub enum Token {
 }
 
 impl Token {
-    pub fn from_string(kind: &str, value: Option<String>) -> LexerResult<Token> {
+    pub fn from_string(kind: &str, _value: Option<String>) -> LexerResult<Token> {
         match kind {
             _ => Err(LexerError::InvalidToken(kind.to_string())),
         }
