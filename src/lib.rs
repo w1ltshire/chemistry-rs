@@ -1,5 +1,5 @@
 pub mod element;
+pub mod parser;
+pub mod periodic_table;
 #[cfg(test)]
 mod tests;
-pub mod periodic_table;
-pub mod parser;
