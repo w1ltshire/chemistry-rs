@@ -20,4 +20,6 @@ pub enum ParserError {
     NonExistentElement(String),
     #[error("Unexpected subscript")]
     UnexpectedSubscript,
+    #[error("Missing arrow")]
+    MissingArrow,
 }
