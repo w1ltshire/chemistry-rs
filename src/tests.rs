@@ -1,3 +1,5 @@
+use crate::parser::token::Token;
+use crate::parser::token::Token::{Arrow, Coefficient, Element, Plus, Subscript};
 use crate::periodic_table::PeriodicTable;
 
 #[test]
@@ -9,10 +11,31 @@ fn read_periodic_table() {
 
 #[test]
 fn tokenize() {
-	let string = "H2 + O2 -> H2O";
+	let string = "2H2 + O2 -> H2O";
 	let lexer = crate::parser::token::Lexer::new(string);
 	let tokens = lexer.tokenize().unwrap();
 	println!("{:?}", tokens);
+}
+
+#[test]
+fn tokenize_coefficient() {
+	let string = "2H2 + O2 -> 2H2O";
+	let lexer = crate::parser::token::Lexer::new(string);
+	let tokens = lexer.tokenize().unwrap();
+	let sample = vec![
+		Coefficient(2),
+		Element(String::from("H")),
+		Subscript(2),
+		Plus,
+		Element(String::from("O")),
+		Subscript(2),
+		Arrow(String::from("->")),
+		Coefficient(2),
+		Element(String::from("H")),
+		Subscript(2),
+		Element(String::from("O"))
+	];
+	assert_eq!(tokens, sample);
 }
 
 #[test]

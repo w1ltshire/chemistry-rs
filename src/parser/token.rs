@@ -32,6 +32,7 @@ pub enum Token {
 /// Structure representing a lexer
 pub struct Lexer<'a> {
 	chars: Chars<'a>,
+	prev: Option<Token>,
 }
 
 impl<'a> Lexer<'a> {
@@ -39,6 +40,7 @@ impl<'a> Lexer<'a> {
 	pub fn new(input: &'a str) -> Self {
 		Self {
 			chars: input.chars(),
+			prev: None,
 		}
 	}
 
@@ -59,7 +61,7 @@ impl<'a> Lexer<'a> {
 	/// Parse the next token
 	fn next_token(&mut self) -> LexerResult<Token> {
 		let next_char = self.chars.next().ok_or(LexerError::IterationFinished)?;
-		match next_char {
+		let token = match next_char {
 			' ' => Ok(Token::Whitespace),
 			'+' => Ok(Token::Plus),
 			'(' => Ok(Token::LeftParenthesis),
@@ -67,7 +69,27 @@ impl<'a> Lexer<'a> {
 			'[' => Ok(Token::LeftBracket),
 			']' => Ok(Token::RightBracket),
 			'A'..='Z' | 'a'..='z' | '_' => Ok(Token::Element(next_char.to_string())),
-			'1'..'9' => Ok(Token::Coefficient(next_char.to_string().parse()?)),
+			'1'..='9' => {
+				let mut num = next_char.to_digit(10).unwrap() as isize;
+				while let Some(&c) = self.chars.clone().peekable().peek() {
+					if c.is_ascii_digit() {
+						self.chars.next();
+						num = num * 10 + c.to_digit(10).unwrap() as isize;
+					} else { break; }
+				}
+
+				if let Some(prev) = self.prev.clone() {
+					match prev {
+						Token::Element(_) | Token::RightParenthesis | Token::RightBracket => {
+							return Ok(Token::Subscript(num));
+						}
+						_ => return Ok(Token::Coefficient(num)),
+					}
+				} else {
+					// start of line so its a coefficient
+					return Ok(Token::Coefficient(num));
+				}
+			},
 			'-' | '=' => {
 				if let Some(next_char) = self.chars.next() {
 					match next_char {
@@ -79,6 +101,8 @@ impl<'a> Lexer<'a> {
 				}
 			}
 			_ => Err(LexerError::InvalidToken(next_char.to_string()))
-		}
+		}?;
+		self.prev = Some(token.clone());
+		Ok(token)
 	}
 }
