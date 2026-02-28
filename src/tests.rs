@@ -1,4 +1,3 @@
-use crate::parser::token::Token;
 use crate::parser::token::Token::{Arrow, Coefficient, Element, Plus, Subscript};
 use crate::periodic_table::PeriodicTable;
 
