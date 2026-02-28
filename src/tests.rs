@@ -11,7 +11,7 @@ fn read_periodic_table() {
 
 #[test]
 fn tokenize() {
-    let string = "2H2 + O2 -> H2O";
+    let string = "H2 + Cl2 => 2HCl";
     let lexer = crate::parser::token::Lexer::new(string);
     let tokens = lexer.tokenize().unwrap();
     println!("{:?}", tokens);
@@ -68,7 +68,7 @@ fn reaction() {
 
 #[test]
 fn reaction_from_string() {
-    let expr = "2H2 + O2 => 2H2O";
+    let expr = "H2 + Cl2 -> 2HCl";
     let reaction = crate::reaction::Reaction::from_string(expr).unwrap();
     println!("{}", reaction);
 }

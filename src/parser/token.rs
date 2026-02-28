@@ -68,7 +68,17 @@ impl<'a> Lexer<'a> {
             ')' => Ok(Token::RightParenthesis),
             '[' => Ok(Token::LeftBracket),
             ']' => Ok(Token::RightBracket),
-            'A'..='Z' | 'a'..='z' | '_' => Ok(Token::Element(next_char.to_string())),
+            'A'..='Z' => {
+                let mut sym = next_char.to_string();
+                if let Some(&c) = self.chars.clone().peekable().peek() {
+                    if c.is_ascii_lowercase() {
+                        // consume the lowercase letter
+                        let c = self.chars.next().unwrap();
+                        sym.push(c);
+                    }
+                }
+                Ok(Token::Element(sym))
+            }
             '1'..='9' => {
                 let mut num = next_char.to_digit(10).unwrap() as isize;
                 while let Some(&c) = self.chars.clone().peekable().peek() {
