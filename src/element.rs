@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /// Structure representing a chemical element.
 ///
-/// Fields taken from https://github.com/Bowserinator/Periodic-Table-JSON
+/// Fields taken from <https://github.com/Bowserinator/Periodic-Table-JSON>
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone, PartialOrd)]
 pub struct Element {
     /// Element name

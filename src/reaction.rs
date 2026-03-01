@@ -3,9 +3,12 @@ use crate::parser::error::{ParserError, ParserResult};
 use crate::parser::molecule::Molecule;
 use crate::parser::token::{Lexer, Token};
 
+/// Structure representing a chemical reaction with reactants and products
 #[derive(Debug)]
 pub struct Reaction {
+	/// Array of reactants
 	pub reactants: Vec<Molecule>,
+	/// Array of reaction products
 	pub products: Vec<Molecule>,
 }
 
@@ -14,6 +17,17 @@ fn iter_split_on_plus(tokens: &[Token]) -> Vec<&[Token]> {
 }
 
 impl Reaction {
+	/// Create a [`Reaction`] instance from an array of tokens
+	///
+	/// # Example
+	/// ```rust
+	/// use chemistry_calculator::reaction::Reaction;
+	/// use chemistry_calculator::parser::token::{Token, Lexer};
+	///
+	/// let input = "H2 + Cl2 => 2HCl";
+	/// let tokens = Lexer::new(input).tokenize().unwrap();
+	/// let reaction = Reaction::from_tokens(tokens).unwrap();
+	/// ```
 	pub fn from_tokens(tokens: Vec<Token>) -> ParserResult<Reaction> {
 		let pos = tokens
 			.iter()
@@ -48,6 +62,15 @@ impl Reaction {
 		Ok(Self { reactants, products })
 	}
 
+	/// Create a [`Reaction`] instance from a string
+	///
+	/// # Example
+	/// ```rust
+	/// use chemistry_calculator::reaction::Reaction;
+	///
+	/// let input = "H2 + Cl2 => 2HCl";
+	/// let reaction = Reaction::from_string(input).unwrap();
+	/// ```
 	pub fn from_string(s: &str) -> ParserResult<Reaction> {
 		let expr = Lexer::new(s).tokenize()?;
 		Reaction::from_tokens(expr)

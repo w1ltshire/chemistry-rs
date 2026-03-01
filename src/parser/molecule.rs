@@ -6,18 +6,34 @@ use crate::parser::token::Token;
 use crate::periodic_table::PERIODIC_TABLE;
 
 #[derive(Debug, Clone, PartialEq)]
+/// Chemical element with index (subscript)
 pub struct ElementWithIndex {
+	/// Element itself
 	pub element: Element,
+	/// Element index
 	pub index: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// Molecule of a chemical substance
 pub struct Molecule {
+	/// Molecule coefficient
 	pub coefficient: isize,
+	/// Elements in the molecule
 	pub elements: Vec<ElementWithIndex>,
 }
 
 impl Molecule {
+	/// Create a [`Molecule`] instance from tokens
+	///
+	/// # Example
+	/// ```rust
+	/// use chemistry_calculator::parser::{molecule::Molecule, token::{Lexer, Token}};
+	///
+	/// let input = "2HCl";
+	/// let tokens = Lexer::new(input).tokenize().unwrap();
+	/// let molecule = Molecule::from_tokens(tokens);
+	/// ```
 	pub fn from_tokens(tokens: Vec<Token>) -> ParserResult<Self> {
 		let mut elements: Vec<ElementWithIndex> = Vec::new();
 		let mut coefficient: isize = 1;

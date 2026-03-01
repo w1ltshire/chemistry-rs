@@ -14,6 +14,7 @@ pub struct PeriodicTable {
 }
 
 lazy_static! {
+    /// Global periodic table instance
     pub static ref PERIODIC_TABLE: PeriodicTable = PeriodicTable::new();
 }
 
