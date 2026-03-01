@@ -102,6 +102,14 @@ impl<'a> Lexer<'a> {
                     Ok(Token::Coefficient(num))
                 };
             }
+            '₁'..='₉' => {
+                // subscripts range from U+2080 to U+2089, while regular numbers range from
+                // U+0030 to U+0039 (obv hexadecimal) so we subtract the difference between
+                // subscript and regular numbers in Unicode
+                let num_subscript = next_char as isize - 0x2050;
+                let num_char = std::char::from_u32(num_subscript as u32).unwrap();
+                Ok(Token::Subscript(num_char.to_digit(10).unwrap() as isize))
+            },
             '-' | '=' => {
                 if let Some(next_char) = self.chars.next() {
                     match next_char {

@@ -11,7 +11,7 @@ fn read_periodic_table() {
 
 #[test]
 fn tokenize() {
-    let string = "H2 + Cl2 => 2HCl";
+    let string = "H₂ + Cl₂ => 2HCl";
     let lexer = crate::parser::token::Lexer::new(string);
     let tokens = lexer.tokenize().unwrap();
     println!("{:?}", tokens);
