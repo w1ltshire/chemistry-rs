@@ -126,3 +126,45 @@ impl<'a> Lexer<'a> {
         Ok(token)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::parser::token::Token::{Arrow, Coefficient, Element, Plus, Subscript};
+
+    #[test]
+    fn tokenize() {
+        let string = "H₂ + Cl₂ => 2HCl";
+        let lexer = crate::parser::token::Lexer::new(string);
+        let tokens = lexer.tokenize().unwrap();
+        println!("{:?}", tokens);
+    }
+
+    #[test]
+    fn tokenize_coefficient() {
+        let string = "2H2 + O2 -> 2H2O";
+        let lexer = crate::parser::token::Lexer::new(string);
+        let tokens = lexer.tokenize().unwrap();
+        let sample = vec![
+            Coefficient(2),
+            Element(String::from("H")),
+            Subscript(2),
+            Plus,
+            Element(String::from("O")),
+            Subscript(2),
+            Arrow(String::from("->")),
+            Coefficient(2),
+            Element(String::from("H")),
+            Subscript(2),
+            Element(String::from("O")),
+        ];
+        assert_eq!(tokens, sample);
+    }
+
+    #[test]
+    #[should_panic]
+    fn tokenize_invalid_syntax() {
+        let string = "H2 + O/2 --> H2O";
+        let lexer = crate::parser::token::Lexer::new(string);
+        lexer.tokenize().unwrap();
+    }
+}

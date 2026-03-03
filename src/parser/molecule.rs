@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fmt::Display;
 use crate::element::Element;
 use crate::parser::error::{ParserError, ParserResult};
@@ -65,7 +66,7 @@ impl Molecule {
 						let (inner_parts, next_i) = parse_parts(tokens, i + 1, resolve_element)?;
 						i = next_i;
 						if i >= tokens.len() {
-							return Err(ParserError::MissingRightParenthesis);
+							return Err(ParserError::MissingParenthesis);
 						}
 						match &tokens[i] {
 							Token::RightParenthesis => {
@@ -79,7 +80,7 @@ impl Molecule {
 								}
 								parts.push(MoleculePart::Group { parts: inner_parts, index: gidx });
 							}
-							_ => return Err(ParserError::MissingRightParenthesis),
+							_ => return Err(ParserError::MissingParenthesis),
 						}
 					}
 					Token::RightParenthesis => {
@@ -103,6 +104,29 @@ impl Molecule {
 		let (parts, _next) = parse_parts(&tokens, i, &resolve_element)?;
 		Ok(Self { coefficient, parts })
 	}
+}
+
+/// Count atoms in the molecule
+pub(crate) fn count_atom_occurrences(mol: &Molecule) -> BTreeMap<String, usize> {
+	let mut out: BTreeMap<String, usize> = BTreeMap::new();
+	fn add_counts(map: &mut BTreeMap<String, usize>, part: &MoleculePart, multiplier: usize) {
+		match part {
+			MoleculePart::Element { element, index } => {
+				let e = element.symbol.clone();
+				*map.entry(e).or_insert(0) += index * multiplier;
+			}
+			MoleculePart::Group { parts, index } => {
+				let m = multiplier * (*index);
+				for p in parts {
+					add_counts(map, p, m);
+				}
+			}
+		}
+	}
+	for p in &mol.parts {
+		add_counts(&mut out, p, 1);
+	}
+	out
 }
 
 impl Display for MoleculePart {
@@ -129,5 +153,38 @@ impl Display for Molecule {
 		if self.coefficient != 1 { write!(f, "{}", self.coefficient)?; }
 		for p in &self.parts { write!(f, "{}", p)?; }
 		Ok(())
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use std::collections::BTreeMap;
+	use crate::parser::molecule::{count_atom_occurrences, Molecule};
+
+	#[test]
+	fn molecule() {
+		let string = "2H2O";
+		let lexer = crate::parser::token::Lexer::new(string);
+		let expr = lexer.tokenize().unwrap();
+		let molecule = Molecule::from_tokens(expr).unwrap();
+		assert_eq!(molecule.coefficient, 2);
+	}
+
+	#[test]
+	fn count_atoms() {
+		let string = "C8H9AsBiNO6";
+		let lexer = crate::parser::token::Lexer::new(string);
+		let expr = lexer.tokenize().unwrap();
+		let molecule = Molecule::from_tokens(expr).unwrap();
+
+		let mut sample: BTreeMap<String, usize> = BTreeMap::new();
+		sample.insert(String::from("As"), 1);
+		sample.insert(String::from("Bi"), 1);
+		sample.insert(String::from("C"), 8);
+		sample.insert(String::from("H"), 9);
+		sample.insert(String::from("N"), 1);
+		sample.insert(String::from("O"), 6);
+
+		assert_eq!(count_atom_occurrences(&molecule), sample);
 	}
 }

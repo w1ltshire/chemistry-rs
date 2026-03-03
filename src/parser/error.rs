@@ -23,5 +23,7 @@ pub enum ParserError {
     #[error("Missing arrow")]
     MissingArrow,
     #[error("Missing parenthesis")]
-    MissingRightParenthesis
+    MissingParenthesis,
+    #[error("Infeasible equation, not possible to balance")]
+    InfeasibleEquation
 }
