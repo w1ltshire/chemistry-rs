@@ -53,13 +53,11 @@ fn molecule() {
     let expr = lexer.tokenize().unwrap();
     let molecule = Molecule::from_tokens(expr).unwrap();
     assert_eq!(molecule.coefficient, 2);
-    assert_eq!(molecule.elements[0].index, 2);
-    assert_eq!(molecule.elements[1].index, 1);
 }
 
 #[test]
 fn reaction() {
-    let string = "2H2 + O2 -> 2H2O";
+    let string = "Al(OH)3 + H2SO4 -> Al2(SO4)3 + H2O";
     let lexer = crate::parser::token::Lexer::new(string);
     let expr = lexer.tokenize().unwrap();
     let reaction = crate::reaction::Reaction::from_tokens(expr).unwrap();

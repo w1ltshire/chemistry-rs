@@ -22,4 +22,6 @@ pub enum ParserError {
     UnexpectedSubscript,
     #[error("Missing arrow")]
     MissingArrow,
+    #[error("Missing parenthesis")]
+    MissingRightParenthesis
 }
