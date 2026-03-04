@@ -79,6 +79,7 @@ impl Reaction {
 		Reaction::from_tokens(expr)
 	}
 
+	/// Balance the equation, will modify `self`
 	pub fn balance(&mut self) {
 		let all_mols: Vec<&Molecule> = self.reactants.iter().chain(self.products.iter()).collect();
 
