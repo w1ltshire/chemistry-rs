@@ -3,7 +3,7 @@ use std::fmt::Display;
 use fraction::Integer;
 use num_rational::Rational64;
 use crate::parser::error::{ParserError, ParserResult};
-use crate::parser::molecule::{Molecule, MoleculePart};
+use crate::molecule::Molecule;
 use crate::parser::token::{Lexer, Token};
 
 /// Structure representing a chemical reaction with reactants and products
@@ -24,8 +24,8 @@ impl Reaction {
 	///
 	/// # Example
 	/// ```rust
-	/// use chemistry_calculator::reaction::Reaction;
-	/// use chemistry_calculator::parser::token::{Token, Lexer};
+	/// use chem_equations::reaction::Reaction;
+	/// use chem_equations::parser::token::{Token, Lexer};
 	///
 	/// let input = "H2 + Cl2 => 2HCl";
 	/// let tokens = Lexer::new(input).tokenize().unwrap();
@@ -69,7 +69,7 @@ impl Reaction {
 	///
 	/// # Example
 	/// ```rust
-	/// use chemistry_calculator::reaction::Reaction;
+	/// use chem_equations::reaction::Reaction;
 	///
 	/// let input = "H2 + Cl2 => 2HCl";
 	/// let reaction = Reaction::from_string(input).unwrap();
@@ -77,24 +77,6 @@ impl Reaction {
 	pub fn from_string(s: &str) -> ParserResult<Reaction> {
 		let expr = Lexer::new(s).tokenize()?;
 		Reaction::from_tokens(expr)
-	}
-
-	fn collect_element_counts(mol: &Molecule) -> HashMap<String, i64> {
-		fn walk(parts: &[MoleculePart], acc: &mut HashMap<String, i64>, multiplier: i64) {
-			for p in parts {
-				match p {
-					MoleculePart::Element { element, index } => {
-						*acc.entry(element.symbol.clone()).or_insert(0) += multiplier * (*index as i64);
-					}
-					MoleculePart::Group { parts: sub, index } => {
-						walk(sub, acc, multiplier * (*index as i64));
-					}
-				}
-			}
-		}
-		let mut counts = HashMap::new();
-		walk(&mol.parts, &mut counts, 1);
-		counts
 	}
 
 	pub fn balance(&mut self) {
@@ -105,7 +87,7 @@ impl Reaction {
 		let mut mol_counts: Vec<HashMap<String, i64>> = Vec::with_capacity(all_mols.len());
 
 		for mol in &all_mols {
-			let counts = Self::collect_element_counts(mol);
+			let counts = mol.collect_element_counts();
 			for k in counts.keys() {
 				if !elem_index.contains_key(k) {
 					elem_index.insert(k.clone(), elements.len());

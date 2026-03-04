@@ -1,5 +1,6 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
+use fmtastic::Subscript;
 use crate::element::Element;
 use crate::parser::error::{ParserError, ParserResult};
 use crate::parser::token::Token;
@@ -17,13 +18,13 @@ pub struct Molecule {
 	pub parts: Vec<MoleculePart>,
 }
 
-
 impl Molecule {
 	/// Create a [`Molecule`] instance from tokens
 	///
 	/// # Example
 	/// ```rust
-	/// use chemistry_calculator::parser::{molecule::Molecule, token::{Lexer, Token}};
+	/// use chem_equations::parser::{ token::{Lexer, Token}};
+	/// use chem_equations::molecule::Molecule;
 	///
 	/// let input = "2HCl";
 	/// let tokens = Lexer::new(input).tokenize().unwrap();
@@ -104,9 +105,28 @@ impl Molecule {
 		let (parts, _next) = parse_parts(&tokens, i, &resolve_element)?;
 		Ok(Self { coefficient, parts })
 	}
+
+	pub fn collect_element_counts(&self) -> HashMap<String, i64> {
+		fn walk(parts: &[MoleculePart], acc: &mut HashMap<String, i64>, multiplier: i64) {
+			for p in parts {
+				match p {
+					MoleculePart::Element { element, index } => {
+						*acc.entry(element.symbol.clone()).or_insert(0) += multiplier * (*index as i64);
+					}
+					MoleculePart::Group { parts: sub, index } => {
+						walk(sub, acc, multiplier * (*index as i64));
+					}
+				}
+			}
+		}
+		let mut counts = HashMap::new();
+		walk(&self.parts, &mut counts, 1);
+		counts
+	}
 }
 
 /// Count atoms in the molecule
+#[allow(dead_code)]
 pub(crate) fn count_atom_occurrences(mol: &Molecule) -> BTreeMap<String, usize> {
 	let mut out: BTreeMap<String, usize> = BTreeMap::new();
 	fn add_counts(map: &mut BTreeMap<String, usize>, part: &MoleculePart, multiplier: usize) {
@@ -134,14 +154,14 @@ impl Display for MoleculePart {
 		match self {
 			MoleculePart::Element { element, index } => {
 				write!(f, "{}", element.symbol)?;
-				if *index != 1 { write!(f, "{}", index)?; }
+				if *index != 1 { write!(f, "{}", Subscript(*index))?; }
 				Ok(())
 			}
 			MoleculePart::Group { parts, index } => {
 				write!(f, "(")?;
 				for p in parts { write!(f, "{}", p)?; }
 				write!(f, ")")?;
-				if *index != 1 { write!(f, "{}", index)?; }
+				if *index != 1 { write!(f, "{}", Subscript(*index))?; }
 				Ok(())
 			}
 		}
@@ -159,7 +179,7 @@ impl Display for Molecule {
 #[cfg(test)]
 mod tests {
 	use std::collections::BTreeMap;
-	use crate::parser::molecule::{count_atom_occurrences, Molecule};
+	use crate::molecule::{count_atom_occurrences, Molecule};
 
 	#[test]
 	fn molecule() {
