@@ -1,23 +1,29 @@
 use serde::{Deserialize, Deserializer, Serialize};
 
+/// API response on compound endpoint
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct CompoundResponse {
 	#[serde(rename = "PC_Compounds")]
 	pub pc_compounds: Vec<Compound>,
 }
 
+/// Structure representing a compound
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Compound {
 	#[serde(rename = "props")]
-	pub props: Vec<Prop>,
+	props: Vec<Prop>,
 }
 
+/// Compound property
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Prop {
+	/// Uniform resource name
 	pub urn: Urn,
+	/// Property name
 	pub value: Value,
 }
 
+/// Uniform resource name
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Urn {
 	pub label: Option<String>,
@@ -31,6 +37,7 @@ pub struct Urn {
 	pub parameters: Option<String>,
 }
 
+/// Possible property values
 #[derive(Debug, Clone ,Serialize, PartialEq)]
 #[serde(untagged)]
 pub enum Value {

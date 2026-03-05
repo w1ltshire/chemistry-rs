@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::compound::{Compound, CompoundResponse};
 use crate::errors::{ApiError, ApiResult, FaultRoot};
 use crate::fast_formula::IdentifierListResponse;
@@ -7,7 +8,8 @@ pub struct Client {
 	#[cfg(feature = "async")]
 	http: reqwest::Client,
 	#[cfg(feature = "sync")]
-	http: reqwest::blocking::Client
+	http: reqwest::blocking::Client,
+	cid_cache: HashMap<String, isize> // formula-cid
 }
 
 /// Base URL for the Pubchem REST API
@@ -22,21 +24,27 @@ impl Client {
 			#[cfg(feature = "async")]
 			http: reqwest::Client::new(),
 			#[cfg(feature = "sync")]
-			http: reqwest::blocking::Client::new()
+			http: reqwest::blocking::Client::new(),
+			cid_cache: HashMap::new()
 		}
 	}
 
 	/// Retrieve a compound ID from Pubchem API by its chemical formula
-	pub async fn cid_by_formula(&self, formula: &str) -> ApiResult<isize> {
+	pub async fn cid_by_formula(&mut self, formula: &str) -> ApiResult<isize> {
+		if let Some(&cid) = self.cid_cache.get(formula) {
+			return Ok(cid);
+		}
 		let url = format!("{BASE_URL}/fastformula/{formula}/cids/JSON?AllowOtherElements=false&MaxRecords=1");
-		Ok(self.get_json::<IdentifierListResponse>(&*url).await?.identifier_list.compound_ids[0])
+		let cid = self.get_json::<IdentifierListResponse>(&*url).await?.identifier_list.compound_ids[0];
+		self.cid_cache.insert(formula.to_string(), cid);
+		Ok(cid)
 	}
 
-	/*/// Retrieve a compound from Pubchem API by its chemical formula
-	pub async fn compound_by_formula(&self, formula: &str) -> ApiResult<Compound> {
-		let cid = self.cid_by_formula(formula).await?.identifier_list.compound_ids[0];
-
-	}*/
+	/// Retrieve a compound from Pubchem API by its chemical formula
+	pub async fn compound_by_formula(&mut self, formula: &str) -> ApiResult<Compound> {
+		let cid = self.cid_by_formula(formula).await?;
+		self.compound_by_cid(cid).await
+	}
 
 	/// Retrieve a compound from Pubchem API by its compound ID
 	pub async fn compound_by_cid(&self, cid: isize) -> ApiResult<Compound> {
@@ -66,7 +74,7 @@ mod tests {
 	#[traced_test]
 	#[tokio::test]
 	async fn cid_by_formula() {
-		let client = Client::new();
+		let mut client = Client::new();
 		assert_eq!(client.cid_by_formula("H2O").await.unwrap(), 962);
 	}
 
@@ -75,5 +83,12 @@ mod tests {
 	async fn compound_by_cid() {
 		let client = Client::new();
 		client.compound_by_cid(962).await.unwrap();
+	}
+
+	#[traced_test]
+	#[tokio::test]
+	async fn compound_by_formula() {
+		let mut client = Client::new();
+		client.compound_by_formula("MgO").await.unwrap();
 	}
 }
