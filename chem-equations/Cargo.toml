@@ -3,6 +3,11 @@ name = "chem-equations"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "../PeriodicTableJSON.json"
+]
 
 [dependencies]
 fraction = "0.15.3"

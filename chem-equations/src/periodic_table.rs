@@ -22,7 +22,7 @@ impl PeriodicTable {
     /// Creates a new instance of [`PeriodicTable`]
     pub fn new() -> Self {
         let mut value: Value =
-            serde_json::from_str(include_str!("../../periodic-table/PeriodicTableJSON.json")).unwrap();
+            serde_json::from_str(include_str!("../PeriodicTableJSON.json")).unwrap();
         let elements = serde_json::from_value(value["elements"].take()).unwrap();
         PeriodicTable { elements }
     }
