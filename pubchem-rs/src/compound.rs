@@ -50,13 +50,35 @@ pub enum Value {
 
 impl Compound {
 	fn get_prop_by_label(&self, label: &str) -> &Prop {
-		// not expected to have multiple props with the same label, return the first element
+		// return the first element, if something specific is needed use `get_prop_by_label_and_name`
 		self.props.iter().filter(|e| e.urn.label == label).collect::<Vec<&Prop>>()[0]
+	}
+
+	fn get_prop_by_label_and_name(&self, label: &str, name: &str) -> &Prop {
+		self.props.iter().filter(|e| e.urn.label == label && e.urn.name.clone().unwrap() == name).collect::<Vec<&Prop>>()[0]
 	}
 
 	/// Get SMILES notation for this compound
 	pub fn smiles(&self) -> Option<String> {
 		if let Value::SVal { sval } = self.get_prop_by_label("SMILES").value.clone() {
+			Some(sval)
+		} else {
+			None
+		}
+	}
+
+	/// Get mass of this compound
+	pub fn mass(&self) -> Option<f64> {
+		if let Value::SVal { sval } = self.get_prop_by_label("Mass").value.clone() {
+			Some(sval.parse().unwrap())
+		} else {
+			None
+		}
+	}
+
+	/// Get IUPAC name of this compound
+	pub fn name(&self) -> Option<String> {
+		if let Value::SVal { sval } = self.get_prop_by_label_and_name("IUPAC Name", "Allowed").value.clone() {
 			Some(sval)
 		} else {
 			None

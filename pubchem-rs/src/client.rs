@@ -89,6 +89,7 @@ mod tests {
 	#[tokio::test]
 	async fn compound_by_formula() {
 		let mut client = Client::new();
-		client.compound_by_formula("MgO").await.unwrap();
+		let compound = client.compound_by_formula("MgO").await.unwrap();
+		tracing::debug!("{:?}, {:?}, {:?}", compound.mass(), compound.name(), compound.smiles());
 	}
 }
