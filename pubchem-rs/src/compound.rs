@@ -26,7 +26,7 @@ pub struct Prop {
 /// Uniform resource name
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Urn {
-	pub label: Option<String>,
+	pub label: String,
 	pub name: Option<String>,
 	pub datatype: Option<u64>,
 	pub implementation: Option<String>,
@@ -46,6 +46,22 @@ pub enum Value {
 	SVal { sval: String },
 	Binary { binary: String },
 	Empty,
+}
+
+impl Compound {
+	fn get_prop_by_label(&self, label: &str) -> &Prop {
+		// not expected to have multiple props with the same label, return the first element
+		self.props.iter().filter(|e| e.urn.label == label).collect::<Vec<&Prop>>()[0]
+	}
+
+	/// Get SMILES notation for this compound
+	pub fn smiles(&self) -> Option<String> {
+		if let Value::SVal { sval } = self.get_prop_by_label("SMILES").value.clone() {
+			Some(sval)
+		} else {
+			None
+		}
+	}
 }
 
 impl<'de> Deserialize<'de> for Value {
