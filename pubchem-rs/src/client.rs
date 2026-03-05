@@ -1,3 +1,7 @@
+use crate::compound::{Compound, CompoundResponse};
+use crate::errors::{ApiError, ApiResult, FaultRoot};
+use crate::fast_formula::IdentifierListResponse;
+
 /// An asynchronous `Client` to make Requests with.
 pub struct Client {
 	#[cfg(feature = "async")]
@@ -6,10 +10,13 @@ pub struct Client {
 	http: reqwest::blocking::Client
 }
 
+/// Base URL for the Pubchem REST API
+pub(crate) const BASE_URL: &str = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound";
+
 impl Client {
 	/// Create a new instance of [`Client`].
 	///
-	/// Will use a [`reqwest::Client`] if `async` feature is enabled, if `sync` feature - [`reqwest::blocking::Client`]
+	/// Will use a [`reqwest::Client`] if `async` feature is enabled, if `sync` - [`reqwest::blocking::Client`]
 	pub fn new() -> Self {
 		Self {
 			#[cfg(feature = "async")]
@@ -17,5 +24,56 @@ impl Client {
 			#[cfg(feature = "sync")]
 			http: reqwest::blocking::Client::new()
 		}
+	}
+
+	/// Retrieve a compound ID from Pubchem API by its chemical formula
+	pub async fn cid_by_formula(&self, formula: &str) -> ApiResult<isize> {
+		let url = format!("{BASE_URL}/fastformula/{formula}/cids/JSON?AllowOtherElements=false&MaxRecords=1");
+		Ok(self.get_json::<IdentifierListResponse>(&*url).await?.identifier_list.compound_ids[0])
+	}
+
+	/*/// Retrieve a compound from Pubchem API by its chemical formula
+	pub async fn compound_by_formula(&self, formula: &str) -> ApiResult<Compound> {
+		let cid = self.cid_by_formula(formula).await?.identifier_list.compound_ids[0];
+
+	}*/
+
+	/// Retrieve a compound from Pubchem API by its compound ID
+	pub async fn compound_by_cid(&self, cid: isize) -> ApiResult<Compound> {
+		let url = format!("{BASE_URL}/cid/{cid}/json");
+		Ok(self.get_json::<CompoundResponse>(&*url).await?.pc_compounds[0].clone())
+	}
+
+	async fn get_json<T: serde::de::DeserializeOwned>(&self, url: &str) -> ApiResult<T> {
+		tracing::debug!(url = %url, "sending request");
+		let resp = self.http.get(url).send().await?;
+		let status = resp.status();
+		let bytes = resp.bytes().await?;
+		if status.is_success() {
+			Ok(serde_json::from_slice(&bytes)?)
+		} else {
+			let fault: FaultRoot = serde_json::from_slice(&bytes)?;
+			Err(ApiError::ServerError(fault.fault))
+		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use tracing_test::traced_test;
+	use crate::client::Client;
+
+	#[traced_test]
+	#[tokio::test]
+	async fn cid_by_formula() {
+		let client = Client::new();
+		assert_eq!(client.cid_by_formula("H2O").await.unwrap(), 962);
+	}
+
+	#[traced_test]
+	#[tokio::test]
+	async fn compound_by_cid() {
+		let client = Client::new();
+		client.compound_by_cid(962).await.unwrap();
 	}
 }
