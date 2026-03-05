@@ -8,6 +8,7 @@ include = [
     "Cargo.toml",
     "PeriodicTableJSON.json"
 ]
+description = "Crate for parsing and balacing chemical equations"
 
 [dependencies]
 fraction = "0.15.3"
